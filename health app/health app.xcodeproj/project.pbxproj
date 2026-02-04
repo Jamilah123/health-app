@@ -30,6 +30,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		4CA513142F332C2400B6AB6A /* Model */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Model;
+			sourceTree = "<group>";
+		};
+		4CA513182F332C2900B6AB6A /* View */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = View;
+			sourceTree = "<group>";
+		};
+		4CA5131B2F332C2B00B6AB6A /* Viewmodel */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Viewmodel;
+			sourceTree = "<group>";
+		};
 		4CCBB44A2F2F3D14004F83F5 /* health app */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "health app";
@@ -79,6 +94,9 @@
 				4CCBB4582F2F3D15004F83F5 /* health appTests */,
 				4CCBB4622F2F3D15004F83F5 /* health appUITests */,
 				4CCBB4492F2F3D14004F83F5 /* Products */,
+				4CA513142F332C2400B6AB6A /* Model */,
+				4CA513182F332C2900B6AB6A /* View */,
+				4CA5131B2F332C2B00B6AB6A /* Viewmodel */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +126,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				4CA513142F332C2400B6AB6A /* Model */,
+				4CA513182F332C2900B6AB6A /* View */,
+				4CA5131B2F332C2B00B6AB6A /* Viewmodel */,
 				4CCBB44A2F2F3D14004F83F5 /* health app */,
 			);
 			name = "health app";
