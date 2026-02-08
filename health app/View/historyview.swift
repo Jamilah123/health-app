@@ -45,30 +45,40 @@ struct GlucoseCardView: View {
 
     var body: some View {
         HStack {
-            Image(systemName: "barcode.viewfinder")
-                .foregroundStyle(.white)
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("قراءة السكر")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-
-                Text(time)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-            }
-
             Text(value)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
+
+            Spacer()
+
+            HStack(spacing: 8) {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("قراءة السكر")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+
+                    Text(time)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                }
+
+                Image(systemName: "barcode.viewfinder")
+                    .foregroundStyle(.white)
+            }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.container)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.container.opacity(0.35))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                )
                 .glassEffect(.clear.tint(.black.opacity(0.65)))
         )
         .padding(.horizontal)
@@ -82,30 +92,40 @@ struct InsulinCardView: View {
 
     var body: some View {
         HStack {
-            Image(systemName: "syringe.fill")
-                .foregroundStyle(.white)
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("جرعة انسولين")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-
-                Text(time)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-            }
-
             Text(dose)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
+
+            Spacer()
+
+            HStack(spacing: 8) {
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("جرعة انسولين")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+
+                    Text(time)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                }
+
+                Image(systemName: "syringe.fill")
+                    .foregroundStyle(.white)
+            }
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.container2)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.container2.opacity(0.35))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
+                )
                 .glassEffect(.clear.tint(.black.opacity(0.65)))
         )
         .padding(.horizontal)
