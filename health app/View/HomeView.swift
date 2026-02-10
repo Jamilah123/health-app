@@ -7,25 +7,31 @@ struct HomeView: View {
     @ObservedObject var recordsVM: RecordsViewModel
     @StateObject private var viewModel = HomeViewModel()
 
+
     @State private var showInsulinSheet = false
     @State private var showManualInput = false
     @State private var selectedOption: InsulinOption = .manual
 
     @State private var insulinUnits = ""
     @State private var lastInsulinUnits: Int?
+    
+    @State private var showScanView = false
+
 
     var body: some View {
         ZStack {
 
             HealthBackground()
-
-            VStack(spacing: 20) {
+            VStack(spacing: 30) {
+                Spacer().frame(height: 80)
                 glucoseCard
                 insulinCard
                 chartCard
+
                 Spacer()
             }
             .padding()
+
 
             // 🔥 Sheet اختيار الطريقة
             if showInsulinSheet {
@@ -40,6 +46,12 @@ struct HomeView: View {
                     isPresented: $showInsulinSheet,
                     showManualInput: $showManualInput
                 )
+                // iOS 17+ onChange API: two-parameter closure (oldValue, newValue)
+                .onChange(of: selectedOption) { _, newValue in
+                    if newValue == .camera {
+                        showScanView = true
+                    }
+                }
             }
 
             // ✍️ إدخال يدوي
@@ -57,6 +69,10 @@ struct HomeView: View {
         .animation(.easeInOut, value: showManualInput)
         .onAppear {
             viewModel.onAppear()
+        }
+        
+        .sheet(isPresented: $showScanView) {
+            ScanNeedleView(recordsVM: recordsVM)
         }
     }
 }
@@ -105,20 +121,22 @@ extension HomeView {
                     HStack(spacing: 4) {
                         Text("الآن")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(Color("TextGray"))
 
                         Image(systemName: "clock.fill")
                             .font(.caption)
-                            .foregroundColor(.gray)
-                    }
+                            .foregroundColor(Color("TextGray"))
 
+                    }
                 }
-                .padding()
+                .padding() // 🔹 اضغط النص داخل المربع
+                .frame(width: 276, height: 50) // 🔹 حجم المربع
                 .background(
                     RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.blue.opacity(0.12))
+                        .fill(Color("buttoun"))
                 )
             }
+
 
             // 🔵 الزر الأزرق (صار تحت)
             Button {
@@ -127,7 +145,9 @@ extension HomeView {
                 Text("تسجيل إبرة جديدة")
                     .foregroundColor(.white)
                     .frame(width: 276, height: 50)
-                    .background(Color.blue)
+                    .background(
+                        Color("buttoun2") // 🔹 استخدم اللون من Assets
+                    )
                     .cornerRadius(25)
             }
         }
@@ -197,7 +217,7 @@ extension HomeView {
             .foregroundColor(.white)
             .frame(height: 45)
             .frame(maxWidth: .infinity)
-            .background(Color.blue)
+            .background( Color("container") )
             .cornerRadius(25)
 
         }
@@ -248,6 +268,10 @@ struct InsulinCenterSheet: View {
             isPresented = false
             if option == .manual {
                 showManualInput = true
+            }
+            
+            if option == .camera {
+
             }
         } label: {
             Text(title)

@@ -1,38 +1,39 @@
 import SwiftUI
 
 struct RecordsView: View {
-
     @ObservedObject var viewModel: RecordsViewModel
 
     var body: some View {
         ZStack {
-            // الخلفية المميزة
+            // 🔹 الخلفية المميزة
             HealthBackground()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-
+                    Spacer().frame(height: 40)
+                    // 🔹 عنوان الصفحة
                     Text("السجل")
                         .font(.largeTitle)
                         .fontWeight(.bold)
 
                     Text("تاريخ القراءات والجرعات")
-                        .foregroundColor(.gray)
+                        .foregroundColor(.black)
 
-                    // تجميع السجلات حسب اليوم
+                    // 🔹 تجميع السجلات حسب اليوم
                     ForEach(groupedRecords.keys.sorted(by: >), id: \.self) { day in
-                        VStack(alignment: .leading, spacing: 12) {
+                        if let records = groupedRecords[day], !records.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
 
-                            Text(dayTitle(day))
-                                .font(.headline)
+                                Text(dayTitle(day))
+                                    .font(.headline)
 
-                            if let records = groupedRecords[day] {
                                 ForEach(records) { record in
                                     recordCard(record)
                                 }
+
                             }
+                            .padding(.top, 10)
                         }
-                        .padding(.top, 10)
                     }
                 }
                 .padding()
@@ -44,18 +45,15 @@ struct RecordsView: View {
 // MARK: - Components
 extension RecordsView {
 
-    // كرت لكل سجل
+    // 🔹 كرت لكل سجل
     private func recordCard(_ record: HealthRecord) -> some View {
         HStack {
-
             VStack(alignment: .leading, spacing: 4) {
-
                 switch record.type {
                 case .insulin(let units):
                     Text("جرعة إنسولين")
                         .font(.headline)
                     Text("\(units) وحدات")
-
                 case .glucose(let value):
                     Text("قراءة سكر")
                         .font(.headline)
@@ -78,7 +76,7 @@ extension RecordsView {
         .shadow(radius: 3)
     }
 
-    // أيقونة حسب نوع السجل
+    // 🔹 أيقونة حسب نوع السجل
     private func icon(for record: HealthRecord) -> String {
         switch record.type {
         case .insulin: return "syringe"
@@ -86,12 +84,12 @@ extension RecordsView {
         }
     }
 
-    // تجميع السجلات حسب اليوم
+    // 🔹 تجميع السجلات حسب اليوم
     private var groupedRecords: [Date: [HealthRecord]] {
         Dictionary(grouping: viewModel.records) { Calendar.current.startOfDay(for: $0.date) }
     }
 
-    // عنوان اليوم: اليوم / أمس / التاريخ
+    // 🔹 عنوان اليوم: اليوم / أمس / التاريخ
     private func dayTitle(_ date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
@@ -110,8 +108,6 @@ extension RecordsView {
 #Preview {
     let vm = RecordsViewModel()
     vm.addInsulin(units: 5)
-    vm.addGlucose(value: 180)
-    vm.addGlucose(value: 155, date: Calendar.current.date(byAdding: .day, value: -1, to: Date())!)
     return RecordsView(viewModel: vm)
 }
 
