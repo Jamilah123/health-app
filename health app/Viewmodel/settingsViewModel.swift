@@ -97,11 +97,11 @@ final class SettingsViewModel: ObservableObject {
         ) { _, samples, _ in
             guard let samples = samples as? [HKQuantitySample] else { return }
             DispatchQueue.main.async {
-                self.glucoseRecords = samples.map {
-                    GlucoseRecord(
-                        value: $0.quantity.doubleValue(for: HKUnit(from: "mg/dL")),
-                        date: $0.startDate
-                    )
+                let unit: HKUnit = (self.selectedSugarUnit == .mgdl) ? HKUnit(from: "mg/dL") : HKUnit(from: "mmol/L")
+                self.glucoseRecords = samples.map { sample in
+                    let value = sample.quantity.doubleValue(for: unit)
+                    let date = sample.startDate
+                    return GlucoseRecord(value: value, date: date)
                 }
             }
         }
@@ -140,3 +140,4 @@ final class SettingsViewModel: ObservableObject {
         isExportingPDF = false
     }
 }
+

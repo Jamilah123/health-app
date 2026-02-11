@@ -26,7 +26,6 @@ struct SettingsView: View {
                 .padding(.horizontal, 20)
             }
         }
-        .preferredColorScheme(vm.isDarkMode ? .dark : .light)
     }
 
     // MARK: - Header
@@ -63,7 +62,6 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
             sugarUnitContainer
-            darkModeContainer
         }
     }
 
@@ -125,17 +123,6 @@ struct SettingsView: View {
                     vm.selectedSugarUnit = unit
                 }
             }
-        }
-    }
-
-    // MARK: - Dark Mode
-    var darkModeContainer: some View {
-        container(height: 60) {
-            Toggle("", isOn: $vm.isDarkMode)
-                .labelsHidden()
-                .tint(.green)
-
-            Text("الوضع الداكن")
         }
     }
 

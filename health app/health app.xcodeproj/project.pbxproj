@@ -436,7 +436,7 @@
 				CODE_SIGN_ENTITLEMENTS = "health app/health app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9F6WVNVANH;
+				DEVELOPMENT_TEAM = C693YHBWPU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads blood glucose data from Apple Health to display and track blood sugar levels.\n";
@@ -470,7 +470,7 @@
 				CODE_SIGN_ENTITLEMENTS = "health app/health app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 9F6WVNVANH;
+				DEVELOPMENT_TEAM = C693YHBWPU;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads blood glucose data from Apple Health to display and track blood sugar levels.\n";

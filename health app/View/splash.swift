@@ -14,10 +14,10 @@ struct SplashView: View {
             VStack(spacing: 24) {
 
                 // الايقونة (موجودة من البداية)
-                Image("Wezan")
+                Image("icond")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 80, height: 80)
+                    .frame(width: 200, height: 200)
                     .foregroundStyle(.white)
 
                 // الاسم (يتحرك)
