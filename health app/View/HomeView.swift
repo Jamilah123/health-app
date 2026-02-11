@@ -44,14 +44,11 @@ struct HomeView: View {
                 InsulinCenterSheet(
                     selectedOption: $selectedOption,
                     isPresented: $showInsulinSheet,
-                    showManualInput: $showManualInput
+                    showManualInput: $showManualInput,
+                    showScanView: $showScanView
                 )
-                // iOS 17+ onChange API: two-parameter closure (oldValue, newValue)
-                .onChange(of: selectedOption) { _, newValue in
-                    if newValue == .camera {
-                        showScanView = true
-                    }
-                }
+              
+                
             }
 
             // ✍️ إدخال يدوي
@@ -237,6 +234,8 @@ struct InsulinCenterSheet: View {
     @Binding var selectedOption: InsulinOption
     @Binding var isPresented: Bool
     @Binding var showManualInput: Bool
+    @Binding var showScanView: Bool
+
 
     var body: some View {
         VStack(spacing: 20) {
@@ -266,13 +265,15 @@ struct InsulinCenterSheet: View {
         Button {
             selectedOption = option
             isPresented = false
+
             if option == .manual {
                 showManualInput = true
             }
-            
-            if option == .camera {
 
+            if option == .camera {
+                showScanView = true
             }
+
         } label: {
             Text(title)
                 .font(.headline)
@@ -286,6 +287,7 @@ struct InsulinCenterSheet: View {
                 )
         }
     }
+
 }
 
 // MARK: - Option Enum

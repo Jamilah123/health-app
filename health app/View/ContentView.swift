@@ -23,11 +23,13 @@ struct ContentView: View {
                 }
 
             // 🔹 تاب الإعدادات
-            Text("الإعدادات")
+            // 🔹 تاب الإعدادات
+            SettingsView()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("الإعدادات")
                 }
+
         }
     }
 }
