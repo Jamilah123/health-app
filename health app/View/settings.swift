@@ -14,7 +14,7 @@ struct SettingsView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 37) {
 
                     header
                     accessSection
