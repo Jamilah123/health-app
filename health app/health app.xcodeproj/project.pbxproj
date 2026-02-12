@@ -221,7 +221,7 @@
 				};
 			};
 			buildConfigurationList = 4CCBB4432F2F3D14004F83F5 /* Build configuration list for PBXProject "health app" */;
-			developmentRegion = ar;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
