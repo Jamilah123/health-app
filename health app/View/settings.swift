@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 struct SettingsView: View {
@@ -83,7 +84,7 @@ struct SettingsView: View {
                 vm.connectAppleHealth()
             }
         } label: {
-            container(height: 100) {
+            settingsTile(height: 100) {
                 VStack(alignment: .trailing, spacing: 4) {
                     Text("Apple Health")
                         .font(.headline)
@@ -107,7 +108,7 @@ struct SettingsView: View {
         Button {
             showSugarUnitSheet = true
         } label: {
-            container(height: 60) {
+            settingsTile(height: 60) {
                 chevron
                 VStack(alignment: .trailing) {
                     Text("وحدة السكر").font(.headline)
@@ -118,7 +119,7 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
         .confirmationDialog("وحدة القياس", isPresented: $showSugarUnitSheet) {
-            ForEach(SettingsViewModel.SugarUnit.allCases, id: \.self) { unit in
+            ForEach(SettingsViewModel.SugarUnit.allCases) { unit in
                 Button(unit.rawValue) {
                     vm.selectedSugarUnit = unit
                 }
@@ -131,7 +132,7 @@ struct SettingsView: View {
         Button {
             vm.exportPDF()
         } label: {
-            container(height: 80) {
+            settingsTile(height: 80) {
                 chevron
                 VStack(alignment: .trailing) {
                     Text("البيانات").font(.headline)
@@ -148,12 +149,12 @@ struct SettingsView: View {
             .foregroundColor(.gray)
     }
 
-    func container<Content: View>(
+    func settingsTile<Content: View>(
         height: CGFloat,
         @ViewBuilder content: () -> Content
     ) -> some View {
         RoundedRectangle(cornerRadius: 28)
-            .fill(Color.container.opacity(0.7))
+            .fill(Color.settingsContainer.opacity(0.7))
             .frame(height: height)
             .overlay(
                 HStack {
@@ -166,8 +167,12 @@ struct SettingsView: View {
     }
 }
 
-
 #Preview {
     SettingsView()
+}
+
+// MARK: - Design System Colors
+extension Color {
+    static let settingsContainer = Color.black.opacity(0.2)
 }
 

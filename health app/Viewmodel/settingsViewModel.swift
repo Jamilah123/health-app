@@ -2,142 +2,171 @@ import Foundation
 import HealthKit
 import SwiftUI
 import Combine
+import UIKit
 
-// MARK: - Model
-public struct GlucoseRecord: Hashable {
-    public let value: Double
-    public let date: Date
-}
-
-// MARK: - ViewModel
-@MainActor
 final class SettingsViewModel: ObservableObject {
 
-    // MARK: - Apple Health
-    @Published var isAppleHealthConnected: Bool = false
-    @Published var isLoadingHealth: Bool = false
+    // MARK: - Nested Types
+    enum SugarUnit: String, CaseIterable, Identifiable {
+        case mgdl = "ملجم/دل"
+        case mmol = "مليمول/لتر"
 
-    // MARK: - Preferences
-    @Published var isDarkMode: Bool = false {
-        didSet { UserDefaults.standard.set(isDarkMode, forKey: "isDarkMode") }
+        var id: String { rawValue }
     }
 
-    enum SugarUnit: String, CaseIterable {
-        case mgdl = "mg/dL"
-        case mmol = "mmol/L"
-    }
-
-    @Published var selectedSugarUnit: SugarUnit = .mgdl {
-        didSet { UserDefaults.standard.set(selectedSugarUnit.rawValue, forKey: "sugarUnit") }
-    }
-
-    // MARK: - Data
-    @Published var glucoseRecords: [GlucoseRecord] = []
-
-    // MARK: - PDF Export
-    @Published var isExportingPDF: Bool = false
-    @Published var pdfURL: URL?
-    @Published var showShareSheet: Bool = false
-
+    // MARK: - HealthKit
     private let healthStore = HKHealthStore()
+    private let glucoseType = HKObjectType.quantityType(forIdentifier: .bloodGlucose)!
+
+    // MARK: - Published State
+    @Published var isAppleHealthConnected = false
+    @Published var isLoadingHealth = false
+    @Published var selectedSugarUnit: SugarUnit = .mgdl
 
     // MARK: - Init
     init() {
-        // قراءة القيم المخزنة
-        self.isDarkMode = UserDefaults.standard.bool(forKey: "isDarkMode")
-        let savedUnit = UserDefaults.standard.string(forKey: "sugarUnit")
-        self.selectedSugarUnit = SugarUnit(rawValue: savedUnit ?? "") ?? .mgdl
-
         checkAppleHealthStatus()
     }
 
-    // MARK: - Apple Health Status
+    // MARK: - Check Status (الحالة الفعلية)
     func checkAppleHealthStatus() {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            isAppleHealthConnected = false
-            return
-        }
-
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
         let status = healthStore.authorizationStatus(for: glucoseType)
-        isAppleHealthConnected = (status == .sharingAuthorized)
+
+        DispatchQueue.main.async {
+            self.isAppleHealthConnected = (status == .sharingAuthorized)
+        }
     }
 
-    // MARK: - Connect Apple Health
+    // MARK: - Connect
     func connectAppleHealth() {
-        guard HKHealthStore.isHealthDataAvailable() else { return }
+        guard !isLoadingHealth else { return }
 
         isLoadingHealth = true
 
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
-        let readTypes: Set = [glucoseType]
-
-        healthStore.requestAuthorization(toShare: [], read: readTypes) { success, _ in
+        healthStore.requestAuthorization(
+            toShare: [],
+            read: [glucoseType]
+        ) { [weak self] _, _ in
             DispatchQueue.main.async {
-                self.isLoadingHealth = false
-                self.isAppleHealthConnected = success
-                if success {
-                    self.fetchGlucoseRecords()
+                self?.isLoadingHealth = false
+                self?.checkAppleHealthStatus()
+            }
+        }
+    }
+
+    // MARK: - Export PDF
+    func exportPDF() {
+        fetchGlucoseData { [weak self] samples in
+            guard let self = self else { return }
+
+            let url = self.createPDF(from: samples)
+
+            DispatchQueue.main.async {
+                let av = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+
+                if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let root = scene.windows.first?.rootViewController {
+                    root.present(av, animated: true)
                 }
             }
         }
     }
 
-    // MARK: - Fetch Records
-    func fetchGlucoseRecords() {
-        guard isAppleHealthConnected else { return }
+    // MARK: - Fetch Data
+    private func fetchGlucoseData(completion: @escaping ([HKQuantitySample]) -> Void) {
 
-        let glucoseType = HKQuantityType.quantityType(forIdentifier: .bloodGlucose)!
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
 
         let query = HKSampleQuery(
             sampleType: glucoseType,
             predicate: nil,
-            limit: 200,
-            sortDescriptors: [NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)]
+            limit: 100,
+            sortDescriptors: [sort]
         ) { _, samples, _ in
-            guard let samples = samples as? [HKQuantitySample] else { return }
-            DispatchQueue.main.async {
-                let unit: HKUnit = (self.selectedSugarUnit == .mgdl) ? HKUnit(from: "mg/dL") : HKUnit(from: "mmol/L")
-                self.glucoseRecords = samples.map { sample in
-                    let value = sample.quantity.doubleValue(for: unit)
-                    let date = sample.startDate
-                    return GlucoseRecord(value: value, date: date)
-                }
-            }
+            completion(samples as? [HKQuantitySample] ?? [])
         }
 
         healthStore.execute(query)
     }
 
-    // MARK: - Export PDF
-    func exportPDF() {
-        guard !glucoseRecords.isEmpty else { return }
+    // MARK: - Create PDF
+    private func createPDF(from samples: [HKQuantitySample]) -> URL {
 
-        isExportingPDF = true
-
-        let reportView = PDFReportView(records: glucoseRecords)
-        let renderer = ImageRenderer(content: reportView)
-
-        let pageRect = CGRect(x: 0, y: 0, width: 612, height: 792)
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 595, height: 842))
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("GlucoseReport.pdf")
-        let pdfRenderer = UIGraphicsPDFRenderer(bounds: pageRect)
 
-        do {
-            let data = pdfRenderer.pdfData { context in
-                context.beginPage()
-                if let cgImage = renderer.cgImage {
-                    context.cgContext.draw(cgImage, in: pageRect)
+        try? renderer.writePDF(to: url) { context in
+            context.beginPage()
+
+            let titleAttributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.boldSystemFont(ofSize: 24)
+            ]
+
+            "Glucose Report".draw(at: CGPoint(x: 40, y: 40), withAttributes: titleAttributes)
+
+            let unit = selectedSugarUnit == .mgdl
+                ? HKUnit(from: "mg/dL")
+                : HKUnit.moleUnit(with: .milli, molarMass: HKUnitMolarMassBloodGlucose)
+
+            let values = samples.map { $0.quantity.doubleValue(for: unit) }
+
+            let average = values.isEmpty ? 0 : values.reduce(0, +) / Double(values.count)
+            let maxValue = values.max() ?? 0
+            let minValue = values.min() ?? 0
+
+            var y: CGFloat = 90
+            let font = UIFont.systemFont(ofSize: 14)
+
+            "Average: \(formatValue(average))".draw(at: CGPoint(x: 40, y: y), withAttributes: [.font: font])
+            y += 20
+            "Highest: \(formatValue(maxValue))".draw(at: CGPoint(x: 40, y: y), withAttributes: [.font: font])
+            y += 20
+            "Lowest: \(formatValue(minValue))".draw(at: CGPoint(x: 40, y: y), withAttributes: [.font: font])
+
+            y += 40
+
+            for sample in samples {
+
+                let value = sample.quantity.doubleValue(for: unit)
+                let formattedValue = formatValue(value)
+
+                let date = DateFormatter.localizedString(
+                    from: sample.startDate,
+                    dateStyle: .medium,
+                    timeStyle: .short
+                )
+
+                let line = "\(formattedValue)  -  \(date)"
+
+                line.draw(at: CGPoint(x: 40, y: y), withAttributes: [
+                    .font: UIFont.systemFont(ofSize: 13)
+                ])
+
+                y += 18
+
+                if y > 800 {
+                    context.beginPage()
+                    y = 40
                 }
             }
-            try data.write(to: url)
-            self.pdfURL = url
-            self.showShareSheet = true
-        } catch {
-            print("PDF Export Error:", error)
-            self.pdfURL = nil
         }
 
-        isExportingPDF = false
+        return url
+    }
+
+    // MARK: - Format Value
+    private func formatValue(_ value: Double) -> String {
+        if selectedSugarUnit == .mgdl {
+            return String(format: "%.0f mg/dL", value)
+        } else {
+            return String(format: "%.1f mmol/L", value)
+        }
+    }
+
+    // MARK: - Open Settings
+    private func openAppSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
-
