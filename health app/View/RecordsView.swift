@@ -25,7 +25,7 @@ struct RecordsView: View {
                                 Text(dayTitle(day))
                                     .font(.headline)
 
-                                // 👇 هنا الترتيب الجديد
+                                // 👇 ترتيب السجلات
                                 ForEach(sortedRecords(records)) { record in
                                     recordCard(record)
                                 }
@@ -34,6 +34,7 @@ struct RecordsView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing) // ✅ هذا السطر يضبط المحاذاة
                 .padding()
             }
         }
@@ -156,4 +157,5 @@ extension RecordsView {
     vm.addGlucose(value: 120)
     return RecordsView(viewModel: vm)
 }
+
 

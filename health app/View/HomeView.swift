@@ -312,3 +312,4 @@ struct BlurView: UIViewRepresentable {
     HomeView(recordsVM: RecordsViewModel())
 }
 
+
