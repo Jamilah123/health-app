@@ -257,7 +257,6 @@ struct InsulinCenterSheet: View {
             Text("طريقة تسجيل الإبرة").font(.headline)
             HStack(spacing: 0) {
                 option(title: "يدوي", option: .manual)
-                option(title: "صوت", option: .voice)
             }
             .background(RoundedRectangle(cornerRadius: 30).fill(Color.white.opacity(0.35)))
         }
