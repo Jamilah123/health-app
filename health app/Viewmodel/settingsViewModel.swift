@@ -25,19 +25,18 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - Init
     init() {
-        checkAppleHealthStatus()
+        checkAuthorizationStatus()
     }
 
-    // MARK: - Check Status (الحالة الفعلية)
-    func checkAppleHealthStatus() {
+    // MARK: - Check Status
+    private func checkAuthorizationStatus() {
         let status = healthStore.authorizationStatus(for: glucoseType)
 
-        DispatchQueue.main.async {
-            self.isAppleHealthConnected = (status == .sharingAuthorized)
-        }
+        // إذا مو notDetermined يعني المستخدم اتخذ قرار
+        isAppleHealthConnected = (status != .notDetermined)
     }
 
-    // MARK: - Connect
+    // MARK: - Connect Apple Health
     func connectAppleHealth() {
         guard !isLoadingHealth else { return }
 
@@ -46,10 +45,10 @@ final class SettingsViewModel: ObservableObject {
         healthStore.requestAuthorization(
             toShare: [],
             read: [glucoseType]
-        ) { [weak self] _, _ in
+        ) { [weak self] success, _ in
             DispatchQueue.main.async {
                 self?.isLoadingHealth = false
-                self?.checkAppleHealthStatus()
+                self?.isAppleHealthConnected = success
             }
         }
     }
@@ -162,11 +161,5 @@ final class SettingsViewModel: ObservableObject {
             return String(format: "%.1f mmol/L", value)
         }
     }
-
-    // MARK: - Open Settings
-    private func openAppSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
-        }
-    }
 }
+
