@@ -32,6 +32,6 @@ Wazan simplifies this by centralizing glucose readings and making them easy to r
 
 ## ⚙️ Setup & Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/wazan.git
+##TestFligh Link🌀📱
+
+https://testflight.apple.com/join/2ggkqgvZ
