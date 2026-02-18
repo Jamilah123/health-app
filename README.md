@@ -32,6 +32,6 @@ Wazan simplifies this by centralizing glucose readings and making them easy to r
 
 ## ⚙️ Setup & Installation
 
-##TestFligh Link🌀📱
+## TestFligh Link🌀📱
 
 https://testflight.apple.com/join/2ggkqgvZ
