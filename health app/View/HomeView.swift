@@ -5,16 +5,19 @@ import Combine
 struct HomeView: View {
 
     @ObservedObject var recordsVM: RecordsViewModel
+    @ObservedObject var settingsVM: SettingsViewModel
     @StateObject private var viewModel = HomeViewModel()
 
-    @State private var showInsulinSheet = false
     @State private var showManualInput = false
     @State private var showVoiceInput = false
-    @State private var selectedOption: InsulinOption = .manual
+    @State private var showTargetRangeSheet = false
+    @State private var showInsulinAlertSheet = false
+    @State private var showChartAnalysisSheet = false
 
     @State private var insulinUnits = ""
     @State private var lastInsulinUnits: Int?
 
+    // MARK: - Glucose Status
     private var glucoseStatus: (title: String, color: Color) {
         let value = viewModel.latestGlucose?.value ?? 0
 
@@ -28,6 +31,7 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - Last Updated
     private var lastUpdatedText: String {
         guard let date = viewModel.latestGlucose?.date else {
             return "لا يوجد تحديث"
@@ -52,30 +56,69 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
+
             HealthBackground()
 
             VStack(spacing: 30) {
                 Spacer().frame(height: 80)
+
                 glucoseCard
                 insulinCard
                 chartCard
+
                 Spacer()
             }
             .padding()
-
-            if showInsulinSheet {
+            
+            // MARK: - Target Range Sheet
+            if showTargetRangeSheet {
                 Color.black.opacity(0.35)
                     .ignoresSafeArea()
-                    .onTapGesture { showInsulinSheet = false }
+                    .onTapGesture { showTargetRangeSheet = false }
 
-                InsulinCenterSheet(
-                    selectedOption: $selectedOption,
-                    isPresented: $showInsulinSheet,
-                    showManualInput: $showManualInput,
-                    showVoiceInput: $showVoiceInput
-                )
+                TargetRangeSheet()
+                    .frame(maxWidth: 350)
+                    .background(
+                        BlurView(style: .systemUltraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 30))
+                    )
+                    .shadow(radius: 20)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            
+            // MARK: - Insulin Alert Sheet
+            if showInsulinAlertSheet {
+                Color.black.opacity(0.35)
+                    .ignoresSafeArea()
+                    .onTapGesture { showInsulinAlertSheet = false }
+
+                InsulinAlertSheet()
+                    .frame(width: 300)
+                    .background(
+                        BlurView(style: .systemUltraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 30))
+                    )
+                    .shadow(radius: 20)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
 
+            // MARK: - Chart Analysis Sheet
+            if showChartAnalysisSheet {
+                Color.black.opacity(0.35)
+                    .ignoresSafeArea()
+                    .onTapGesture { showChartAnalysisSheet = false }
+
+                ChartAnalysisSheet()
+                    .frame(width: 300)
+                    .background(
+                        BlurView(style: .systemUltraThinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 30))
+                    )
+                    .shadow(radius: 20)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // MARK: - Manual Input
             if showManualInput {
                 Color.black.opacity(0.35)
                     .ignoresSafeArea()
@@ -84,14 +127,11 @@ struct HomeView: View {
                 manualInputCard
             }
         }
-        .animation(.easeInOut, value: showInsulinSheet)
         .animation(.easeInOut, value: showManualInput)
         .animation(.easeInOut, value: showVoiceInput)
-        .onAppear { viewModel.onAppear() }
-
-        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in }
-
-        // 🎤 Voice Input
+        .onAppear {
+            viewModel.onAppear()
+        }
         .sheet(isPresented: $showVoiceInput) {
             SpeechInsulinView(recordsVM: recordsVM)
         }
@@ -102,18 +142,37 @@ struct HomeView: View {
 extension HomeView {
 
     private var glucoseCard: some View {
-        ZStack(alignment: .topLeading) {
+        let darkGrayCustom = Color(red: 88/255, green: 88/255, blue: 88/255)
+
+        return ZStack(alignment: .topLeading) {
 
             VStack(alignment: .trailing, spacing: 10) {
-                Text("مستوى السكر")
-                    .font(.headline)
+
+                ZStack {
+                    Text("مستوى السكر")
+                        .font(.headline)
+                        .foregroundColor(Color("text"))
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    HStack {
+                        Spacer()
+                        Button {
+                            withAnimation { showTargetRangeSheet = true }
+                        } label: {
+                            Image(systemName: "exclamationmark.circle")
+                                .foregroundColor(darkGrayCustom)
+                        }
+                    }
+                }
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("ملغ/دل")
                         .font(.headline)
+                        .foregroundColor(Color("text0"))
 
                     Text("\(Int(viewModel.latestGlucose?.value ?? 0))")
                         .font(.system(size: 44, weight: .bold))
+                        .foregroundColor(Color("text0"))
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
@@ -122,7 +181,7 @@ extension HomeView {
                     .foregroundColor(.gray)
             }
             .padding()
-            .frame(width: 331, height: 159, alignment: .trailing)
+            .frame(width: 330, height: 160, alignment: .trailing)
             .background(.white)
             .cornerRadius(25)
             .shadow(radius: 4)
@@ -140,54 +199,102 @@ extension HomeView {
     }
 
     private var insulinCard: some View {
-        VStack(spacing: 15) {
-            HStack {
-                Spacer()
-                Text("تسجيل جرعة إنسولين").font(.headline)
-                Image(systemName: "syringe")
-            }
+        let darkGrayCustom = Color(red: 88/255, green: 88/255, blue: 88/255)
 
-            if let units = lastInsulinUnits {
-                HStack {
-                    Text("آخر إبرة: \(units) وحدات")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Spacer()
-                    HStack(spacing: 4) {
-                        Text("الآن")
-                            .font(.caption)
-                            .foregroundColor(Color("TextGray"))
-                        Image(systemName: "clock.fill")
-                            .font(.caption)
-                            .foregroundColor(Color("TextGray"))
+        return VStack(spacing: 12) {
+
+            ZStack(alignment: .topTrailing) {
+
+                VStack(spacing: 12) {
+
+                    ZStack {
+                        HStack {
+                            HStack(spacing: 4) {
+                                Text("الآن")
+                                    .foregroundColor(darkGrayCustom)
+                                    .font(.caption)
+
+                                Image(systemName: "clock.fill")
+                                    .foregroundColor(darkGrayCustom)
+                                    .font(.caption)
+                            }
+                            Spacer()
+                        }
+
+                        Text("آخر جرعة إنسولين")
+                            .font(.headline)
+                            .foregroundColor(Color("text"))
+
+                        HStack {
+                            Spacer()
+                            Button {
+                                withAnimation { showInsulinAlertSheet = true }
+                            } label: {
+                                Image(systemName: "exclamationmark.circle")
+                                    .foregroundColor(darkGrayCustom)
+                            }
+                        }
+                    }
+
+                    if let units = lastInsulinUnits {
+                        HStack(spacing: 6) {
+                            Text("وحدات \(settingsVM.selectedSugarUnit.rawValue)")
+                                .font(.subheadline)
+                                .foregroundColor(Color("text0"))
+
+                            Text("\(units)")
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(Color("text0"))
+                        }
+                    } else {
+                        Text("لا توجد جرعة مسجلة")
+                            .foregroundColor(darkGrayCustom)
+                            .font(.subheadline)
+                    }
+
+                    Button {
+                        showManualInput = true
+                    } label: {
+                        Text("تسجيل إبرة جديدة")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 45)
+                            .background(Color("newInj"))
+                            .cornerRadius(25)
                     }
                 }
-                .padding()
-                .frame(width: 276, height: 50)
-                .background(RoundedRectangle(cornerRadius: 25).fill(Color("buttoun")))
+                .padding(.horizontal)
+                .padding(.vertical, 12)
             }
-
-            Button {
-                showInsulinSheet = true
-            } label: {
-                Text("تسجيل إبرة جديدة")
-                    .foregroundColor(.white)
-                    .frame(width: 276, height: 50)
-                    .background(Color("buttoun2"))
-                    .cornerRadius(25)
-            }
+            .frame(width: 330, height: 160)
+            .background(.white)
+            .cornerRadius(30)
+            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 4)
         }
-        .padding()
-        .frame(width: 331)
-        .background(.white)
-        .cornerRadius(25)
-        .shadow(radius: 4)
     }
 
     private var chartCard: some View {
-        VStack(alignment: .trailing, spacing: 10) {
-            Text("مخطط سكر الدم")
-                .font(.headline)
+        let darkGrayCustom = Color(red: 88/255, green: 88/255, blue: 88/255)
+
+        return VStack(alignment: .trailing, spacing: 10) {
+
+            ZStack {
+                Text("مخطط سكر الدم")
+                    .font(.headline)
+                    .foregroundColor(Color("text"))
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation { showChartAnalysisSheet = true }
+                    } label: {
+                        Image(systemName: "exclamationmark.circle")
+                            .foregroundColor(darkGrayCustom)
+                    }
+                }
+            }
 
             if viewModel.glucoseHistory.isEmpty {
                 Text("لا توجد بيانات")
@@ -197,6 +304,7 @@ extension HomeView {
                 ForEach(viewModel.glucoseHistory.prefix(5)) { item in
                     Text("• \(Int(item.value)) mg/dL")
                         .font(.subheadline)
+                        .foregroundColor(Color("text0"))
                 }
             }
 
@@ -211,14 +319,19 @@ extension HomeView {
 
     private var manualInputCard: some View {
         VStack(spacing: 20) {
-            Text("إدخال الجرعة").font(.headline)
+
+            Text("إدخال الجرعة")
+                .font(.headline)
 
             TextField("عدد الوحدات", text: $insulinUnits)
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
                 .font(.system(size: 28, weight: .bold))
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.4)))
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.white.opacity(0.4))
+                )
 
             Button("حفظ") {
                 if let value = Int(insulinUnits) {
@@ -244,54 +357,56 @@ extension HomeView {
     }
 }
 
-// MARK: - Center Sheet
-struct InsulinCenterSheet: View {
-
-    @Binding var selectedOption: InsulinOption
-    @Binding var isPresented: Bool
-    @Binding var showManualInput: Bool
-    @Binding var showVoiceInput: Bool
-
+// MARK: - Sheets
+struct TargetRangeSheet: View {
     var body: some View {
         VStack(spacing: 20) {
-            Text("طريقة تسجيل الإبرة").font(.headline)
-            HStack(spacing: 0) {
-                option(title: "يدوي", option: .manual)
-            }
-            .background(RoundedRectangle(cornerRadius: 30).fill(Color.white.opacity(0.35)))
-        }
-        .padding(25)
-        .frame(width: 300)
-        .background(
-            BlurView(style: .systemUltraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 30))
-        )
-        .shadow(radius: 20)
-    }
-
-    private func option(title: String, option: InsulinOption) -> some View {
-        Button {
-            selectedOption = option
-            isPresented = false
-
-            if option == .manual { showManualInput = true }
-            if option == .voice { showVoiceInput = true }
-
-        } label: {
-            Text(title)
+            Text("النطاق المستهدف")
+                .font(.title2)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+            Text("عادةً بين 70 و 130 mg/dL قبل الأكل")
                 .font(.headline)
-                .foregroundColor(selectedOption == option ? .black : .gray)
-                .frame(maxWidth: .infinity, minHeight: 45)
-                .background(
-                    selectedOption == option
-                    ? RoundedRectangle(cornerRadius: 25).fill(Color.white.opacity(0.6))
-                    : nil
-                )
+                .multilineTextAlignment(.center)
+            Text("استشر طبيبك لتحديد النطاق الأنسب لحالتك")
+                .font(.headline)
+                .multilineTextAlignment(.center)
         }
+        .padding(30)
     }
 }
 
-// MARK: - Option Enum
+struct InsulinAlertSheet: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("تنبيه الأمان")
+                .font(.title2)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+            Text("تأكد من بقاء فاصل زمني كافٍ بين الجرعات\nلتجنب التراكم مما قد يسبب هبوطاً مفاجئاً في السكر")
+                .font(.headline)
+                .multilineTextAlignment(.center)
+        }
+        .padding(30)
+    }
+}
+
+struct ChartAnalysisSheet: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("تحليل البيانات")
+                .font(.title2)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+            Text("يراقب المخطط تقلبات السكر خلال اليوم\nالارتفاعات المفاجئة غالباً ما ترتبط بالوجبات\nبينما تعكس الانخفاضات تأثير النشاط البدني أو الإنسولين")
+                .font(.headline)
+                .multilineTextAlignment(.center)
+        }
+        .padding(30)
+    }
+}
+
+// MARK: - Enum
 enum InsulinOption {
     case manual
     case voice
@@ -299,16 +414,12 @@ enum InsulinOption {
 
 // MARK: - Blur View
 struct BlurView: UIViewRepresentable {
+
     var style: UIBlurEffect.Style
+
     func makeUIView(context: Context) -> UIVisualEffectView {
         UIVisualEffectView(effect: UIBlurEffect(style: style))
     }
+
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
 }
-
-// MARK: - Preview
-#Preview {
-    HomeView(recordsVM: RecordsViewModel())
-}
-
-

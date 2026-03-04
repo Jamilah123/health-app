@@ -1,15 +1,19 @@
 import SwiftUI
+import Combine
 
+// MARK: - ContentView
 struct ContentView: View {
 
     @StateObject private var recordsVM = RecordsViewModel()
+    @StateObject private var settingsVM = SettingsViewModel() // ✅ جديد
     @State private var showSplash = true
+
     var body: some View {
         ZStack {
             if showSplash {
                 SplashView()
             } else {
-                MainTabView(recordsVM: recordsVM)
+                MainTabView(recordsVM: recordsVM, settingsVM: settingsVM) // تمرير settingsVM
             }
         }
         .onAppear {
@@ -22,9 +26,11 @@ struct ContentView: View {
     }
 }
 
+// MARK: - MainTabView
 struct MainTabView: View {
 
     @ObservedObject var recordsVM: RecordsViewModel
+    @ObservedObject var settingsVM: SettingsViewModel // ✅ جديد
     @State private var selectedTab = 1
 
     var body: some View {
@@ -37,30 +43,26 @@ struct MainTabView: View {
                 }
                 .tag(0)
 
-            HomeView(recordsVM: recordsVM)
-                .tabItem {
-                    Image(systemName: "lines.measurement.horizontal.aligned.bottom")
-                    Text("المؤشرات")
-                }
-                .tag(1)
-
             RecordsView(viewModel: recordsVM)
                 .tabItem {
                     Image(systemName: "list.bullet.clipboard")
                     Text("السجل")
                 }
                 .tag(2)
+            
+            HomeView(recordsVM: recordsVM, settingsVM: settingsVM) // ✅ تمرير settingsVM
+                .tabItem {
+                    Image(systemName: "lines.measurement.horizontal.aligned.bottom")
+                    Text("المؤشرات")
+                }
+                .tag(1)
         }
         .environment(\.layoutDirection, .leftToRight)
         .accentColor(.black)
     }
 }
 
-
-
-// ✅ Preview
+// MARK: - Preview
 #Preview {
     ContentView()
 }
-
-
