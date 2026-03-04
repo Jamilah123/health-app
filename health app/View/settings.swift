@@ -8,10 +8,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-
-            Image("background")
-                .resizable()
-                .scaledToFill()
+            Color("F8F8FF")
                 .ignoresSafeArea()
 
             ScrollView {
@@ -58,7 +55,7 @@ struct SettingsView: View {
     // MARK: - Preferences
     var preferencesSection: some View {
         VStack(alignment: .trailing, spacing: 12) {
-            Text("التفضيلات")
+            Text("وحدة السكر")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
@@ -69,7 +66,7 @@ struct SettingsView: View {
     // MARK: - Data
     var dataSection: some View {
         VStack(alignment: .trailing, spacing: 12) {
-            Text("البيانات")
+            Text("تصدير البيانات ك ملف PDF")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .trailing)
 
@@ -111,9 +108,8 @@ struct SettingsView: View {
             settingsTile(height: 60) {
                 chevron
                 VStack(alignment: .trailing) {
-                    Text("وحدة السكر").font(.headline)
-                    Text(vm.selectedSugarUnit.rawValue)
-                        .opacity(0.7)
+                    Text(vm.selectedSugarUnit.rawValue) .font(.headline)
+                       
                 }
             }
         }
@@ -135,8 +131,8 @@ struct SettingsView: View {
             settingsTile(height: 80) {
                 chevron
                 VStack(alignment: .trailing) {
-                    Text("البيانات").font(.headline)
-                    Text("تحميل بياناتك كملف PDF").opacity(0.7)
+                    Text("تصدير الأن").font(.headline)
+                   
                 }
             }
         }
@@ -154,14 +150,14 @@ struct SettingsView: View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         RoundedRectangle(cornerRadius: 28)
-            .fill(Color.settingsContainer.opacity(0.7))
+            .fill(Color.buttoun)
             .frame(height: height)
             .overlay(
                 HStack {
                     Spacer()
                     content()
                 }
-                .foregroundColor(.white)
+                .foregroundColor(.black)
                 .padding(.horizontal, 24)
             )
     }

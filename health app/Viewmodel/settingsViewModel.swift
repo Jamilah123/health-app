@@ -8,8 +8,8 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - Nested Types
     enum SugarUnit: String, CaseIterable, Identifiable {
-        case mgdl = "ملجم/دل"
-        case mmol = "مليمول/لتر"
+        case mgdl = "mg/dL"
+        case mmol = "mmol/L"
 
         var id: String { rawValue }
     }
