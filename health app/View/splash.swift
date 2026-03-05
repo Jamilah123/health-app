@@ -5,26 +5,21 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            // الخلفية
-               Image("background")
-                .resizable()
-                .scaledToFill()
+            Color.white
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
 
-                // الايقونة (موجودة من البداية)
                 Image("icond")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 200, height: 200)
                     .foregroundStyle(.white)
 
-                // الاسم (يتحرك)
                 Text("وِزان")
                     .font(.largeTitle)
                     .fontWeight(.medium)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color(red: 0.42, green: 0.39, blue: 0.55))
                     .opacity(showText ? 1 : 0)
                     .offset(y: showText ? 0 : -30)
                     .animation(
@@ -34,7 +29,6 @@ struct SplashView: View {
             }
         }
         .onAppear {
-            // تأخير بسيط قبل نزول الاسم
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 showText = true
             }
@@ -43,7 +37,6 @@ struct SplashView: View {
 }
 
 
-// التصحيح هنا: يجب أن يكون الاسم مطابقاً للـ Struct فوق
 #Preview {
     SplashView()
 }
