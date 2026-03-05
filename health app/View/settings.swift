@@ -8,7 +8,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Color("F8F8FF")
+            Color.white
                 .ignoresSafeArea()
 
             ScrollView {
