@@ -438,9 +438,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "health-app-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Wezan;
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "Wezan requests access to Clinical Health Records to allow the app to read relevant health information from Apple Health. This helps the app provide better insights and support for managing blood glucose levels.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads blood glucose data from Apple Health to display and track your glucose levels.\n";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes blood glucose data to Apple Health when the user chooses to save readings.\nThis app writes blood glucose data to Apple Health when the user chooses to save readings.\n";
-				INFOPLIST_KEY_NSSiriUsageDescription = "Allows users to log insulin doses using Siri voice commands.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -451,7 +451,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jammilaaahhhfee.health;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fedaa.healthapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -476,9 +476,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "health-app-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Wezan;
+				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "Wezan requests access to Clinical Health Records to allow the app to read relevant health information from Apple Health. This helps the app provide better insights and support for managing blood glucose levels.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "This app reads blood glucose data from Apple Health to display and track your glucose levels.\n";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "This app writes blood glucose data to Apple Health when the user chooses to save readings.\nThis app writes blood glucose data to Apple Health when the user chooses to save readings.\n";
-				INFOPLIST_KEY_NSSiriUsageDescription = "Allows users to log insulin doses using Siri voice commands.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
