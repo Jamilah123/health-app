@@ -100,27 +100,31 @@ struct SettingsView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Sugar Unit
+    // MARK: - Sugar Unit (Exact Style Like Image)
     var sugarUnitContainer: some View {
-        Button {
-            showSugarUnitSheet = true
-        } label: {
-            settingsTile(height: 60) {
-                chevron
-                VStack(alignment: .trailing) {
-                    Text(vm.selectedSugarUnit.rawValue) .font(.headline)
-                       
+        let outerBackground = Color(red: 0.94, green: 0.94, blue: 0.95)
+
+        return ZStack {
+            RoundedRectangle(cornerRadius: 35)
+                .fill(outerBackground)
+
+            HStack(spacing: 16) {
+                ForEach(SettingsViewModel.SugarUnit.allCases) { unit in
+                    let isSelected = vm.selectedSugarUnit == unit
+
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            vm.selectedSugarUnit = unit
+                        }
+                    } label: {
+                        SugarUnitOptionView(unit: unit, isSelected: isSelected)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
+            .padding(14)
         }
-        .buttonStyle(.plain)
-        .confirmationDialog("وحدة القياس", isPresented: $showSugarUnitSheet) {
-            ForEach(SettingsViewModel.SugarUnit.allCases) { unit in
-                Button(unit.rawValue) {
-                    vm.selectedSugarUnit = unit
-                }
-            }
-        }
+        .frame(height: 130)
     }
 
     // MARK: - Data Export
@@ -172,3 +176,58 @@ extension Color {
     static let settingsContainer = Color.black.opacity(0.2)
 }
 
+// MARK: - Subviews
+private struct SugarUnitOptionView: View {
+    let unit: SettingsViewModel.SugarUnit
+    let isSelected: Bool
+
+    private var titleColor: Color {
+        isSelected
+        ? Color(red: 0.42, green: 0.38, blue: 0.73)
+        : Color.gray
+    }
+
+    private var fillColor: Color {
+        isSelected
+        ? Color(red: 0.88, green: 0.86, blue: 0.95)
+        : Color(red: 0.92, green: 0.92, blue: 0.93)
+    }
+
+    private var strokeColor: Color {
+        isSelected
+        ? Color(red: 0.65, green: 0.60, blue: 0.85)
+        : Color.clear
+    }
+
+    private var subtitle: String {
+        // Match enum case names in SettingsViewModel
+        switch unit {
+        case .mmol:
+            return "الوحدة الدولية"
+        case .mgdl:
+            return "الأكثر شيوعاً"
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text(unit.rawValue)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(titleColor)
+
+            Text(subtitle)
+                .font(.system(size: 14))
+                .foregroundColor(.gray.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(fillColor)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(strokeColor, lineWidth: 2)
+        )
+    }
+}

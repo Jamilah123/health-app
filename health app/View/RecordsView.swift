@@ -1,161 +1,103 @@
 import SwiftUI
 
 struct RecordsView: View {
+    
     @ObservedObject var viewModel: RecordsViewModel
-
+    
     var body: some View {
         ZStack {
+            
             HealthBackground()
-
-            ScrollView {
-                VStack(alignment: .trailing, spacing: 16) {
-                    Spacer().frame(height: 40)
-
-                    Text("السجل")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-
-                    Text("تاريخ القراءات والجرعات")
-                        .foregroundColor(.black)
-
-                    ForEach(groupedRecords.keys.sorted(by: >), id: \.self) { day in
-                        if let records = groupedRecords[day], !records.isEmpty {
-                            VStack(alignment: .trailing, spacing: 12) {
-
-                                Text(dayTitle(day))
-                                    .font(.headline)
-
-                                // 👇 ترتيب السجلات
-                                ForEach(sortedRecords(records)) { record in
-                                    recordCard(record)
-                                }
+            
+            VStack(alignment: .trailing, spacing: 16) {
+                
+                Spacer().frame(height: 40)
+                
+                Text("السجل")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                // عرض الجرعات فقط
+                if insulinRecords.isEmpty {
+                    
+                    Spacer()
+                    
+                    VStack(spacing: 10) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray.opacity(0.4))
+                        
+                        Text("لا توجد جرعات مسجلة")
+                            .foregroundColor(.gray)
+                            .font(.headline)
+                    }
+                    
+                    Spacer()
+                    
+                } else {
+                    
+                    ScrollView {
+                        VStack(spacing: 14) {
+                            
+                            ForEach(insulinRecords) { record in
+                                insulinCard(record)
                             }
-                            .padding(.top, 10)
+                            
                         }
+                        .padding(.top, 10)
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing) // ✅ هذا السطر يضبط المحاذاة
-                .padding()
+                
+                Spacer()
             }
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding()
         }
     }
 }
 
 // MARK: - Components
+
 extension RecordsView {
-
-    private func recordCard(_ record: HealthRecord) -> some View {
-        HStack {
-
-            VStack(alignment: .leading) {
-                switch record.type {
-                case .insulin(let units):
-                    Text("\(units) وحدات")
-                        .font(.system(size: 13))
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-
-                case .glucose(let value):
-                    Text("\(Int(value)) mg/dL")
-                        .font(.system(size: 13))
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                }
-            }
-
-            Spacer()
-
-            HStack(spacing: 10) {
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    switch record.type {
-                    case .insulin:
-                        Text("جرعة إنسولين")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-
-                    case .glucose:
-                        Text("قراءة سكر")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                    }
-
-                    Text(record.date.formatted(date: .omitted, time: .shortened))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
-                }
-
-                if case .glucose = record.type {
-                    Image(systemName: "barcode.viewfinder")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                } else {
-                    Image(systemName: "syringe")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                }
-            }
-        }
-        .padding()
-        .background(backgroundColor(for: record))
-        .cornerRadius(20)
-        .shadow(radius: 3)
-    }
-
-    private func sortedRecords(_ records: [HealthRecord]) -> [HealthRecord] {
-        records.sorted { first, second in
-
-            if case .insulin = first.type,
-               case .glucose = second.type {
-                return true
-            }
-
-            if case .glucose = first.type,
-               case .insulin = second.type {
+    
+    // فلترة الإنسولين فقط وترتيب تنازلي
+    private var insulinRecords: [HealthRecord] {
+        viewModel.records
+            .filter {
+                if case .insulin = $0.type { return true }
                 return false
             }
-
-            return first.date > second.date
-        }
+            .sorted { $0.date > $1.date }
     }
-
-    private func backgroundColor(for record: HealthRecord) -> Color {
-        switch record.type {
-        case .glucose:
-            return Color("container2")
-        case .insulin:
-            return Color("container")
+    
+    // كرت الجرعة
+    private func insulinCard(_ record: HealthRecord) -> some View {
+        
+        HStack {
+            
+            if case .insulin(let units) = record.type {
+                Text("\(units) وحدات")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+            }
+            
+            Spacer()
+            
+            Text(record.date.formatted(date: .omitted, time: .shortened))
+                .font(.subheadline)
+                .foregroundColor(.gray)
         }
-    }
-
-    private var groupedRecords: [Date: [HealthRecord]] {
-        Dictionary(grouping: viewModel.records) {
-            Calendar.current.startOfDay(for: $0.date)
-        }
-    }
-
-    private func dayTitle(_ date: Date) -> String {
-        let calendar = Calendar.current
-        if calendar.isDateInToday(date) {
-            return "اليوم"
-        } else if calendar.isDateInYesterday(date) {
-            return "أمس"
-        } else {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            return formatter.string(from: date)
-        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(20)
     }
 }
 
 // MARK: - Preview
+
 #Preview {
     let vm = RecordsViewModel()
-    vm.addInsulin(units: 5)
-    vm.addGlucose(value: 120)
+    vm.addInsulin(units: 6)
     return RecordsView(viewModel: vm)
 }
-
-
