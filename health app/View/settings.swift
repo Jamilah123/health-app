@@ -8,27 +8,28 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Color.white
-                .ignoresSafeArea()
+            HealthBackground()
 
-            ScrollView {
-                VStack(spacing: 37) {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        header
+                        accessSection
+                        preferencesSection
+                        dataSection
 
-                    header
-                    accessSection
-                    preferencesSection
-                    dataSection
-
-                    Spacer(minLength: 40)
+                        Spacer(minLength: 40)
+                    }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
             }
         }
+        .edgesIgnoringSafeArea(.all)
     }
 
     // MARK: - Header
     var header: some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .trailing, spacing: 3) {
             Text("الإعدادات")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -43,7 +44,7 @@ struct SettingsView: View {
 
     // MARK: - Access
     var accessSection: some View {
-        VStack(alignment: .trailing, spacing: 12) {
+        VStack(alignment: .trailing, spacing: 16) {
             Text("الوصول")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -54,7 +55,7 @@ struct SettingsView: View {
 
     // MARK: - Preferences
     var preferencesSection: some View {
-        VStack(alignment: .trailing, spacing: 12) {
+        VStack(alignment: .trailing, spacing: 16) {
             Text("وحدة السكر")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -65,7 +66,7 @@ struct SettingsView: View {
 
     // MARK: - Data
     var dataSection: some View {
-        VStack(alignment: .trailing, spacing: 12) {
+        VStack(alignment: .trailing, spacing: 16) {
             Text("تصدير البيانات ك ملف PDF")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .trailing)
